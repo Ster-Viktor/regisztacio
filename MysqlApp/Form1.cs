@@ -79,9 +79,22 @@ namespace MysqlApp
             var adapter = new MySqlDataAdapter("SELECT nev, regdatum FROM felhasznalo ORDER BY nev", conn);
             var builder = new MySqlCommandBuilder(adapter);
             var table = new DataTable();
-
+            
             adapter.Fill(table);
             dataGridView1.DataSource = table;
+
+            table.RowChanged += (sender, args) =>
+            {
+                long id = (long)args.Row["id"];
+                string nev = (string)args.Row["nev"];
+                DateTime datum = (DateTime)args.Row["regdatum"];
+                var cUpdate = conn.CreateCommand();
+                cUpdate.CommandText = "UPDATE felhasznalo SET nev = @nev, jelszo = @jelszo, regdatum = @regdatum WHERE id = @id";
+                cUpdate.Parameters.AddWithValue("@nev", nev);
+                cUpdate.Parameters.AddWithValue("@regdatum", datum);
+                cUpdate.Parameters.AddWithValue("@id", id);
+                cUpdate.ExecuteNonQuery();
+            };
         }
 
         private void regButton_Click(object sender, EventArgs e)
